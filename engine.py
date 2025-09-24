@@ -84,20 +84,6 @@ def sql_to_nl_translator(query):
 def generate_html_table(result_df):
     return result_df.to_html(index=False)
 
-# Stub for create_bar_chart
-def create_bar_chart(result_df):
-    # Example: create a simple bar chart for the first two columns
-    if result_df.shape[1] >= 2:
-        x = result_df.iloc[:, 0]
-        y = result_df.iloc[:, 1]
-        plt.figure(figsize=(10, 6))
-        plt.bar(x, y)
-        plt.xlabel(str(result_df.columns[0]))
-        plt.ylabel(str(result_df.columns[1]))
-        plt.tight_layout()
-        plt.savefig("saved_plot.png")
-        plt.close()
-
 def run_query(user_query):
     CSV_FILE = "Financials.csv"
     df = pd.read_csv(CSV_FILE)
