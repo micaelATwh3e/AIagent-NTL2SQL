@@ -81,8 +81,8 @@ def sql_to_nl_translator(query):
     return sql_query
 
 # Stub for generate_html_table
-def generate_html_table(result_df):
-    return result_df.to_html(index=False)
+#def generate_html_table(result_df):
+#    return result_df.to_html(index=False)
 
 def run_query(user_query):
     CSV_FILE = "Financials.csv"
