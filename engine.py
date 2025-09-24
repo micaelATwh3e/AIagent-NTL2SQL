@@ -7,6 +7,12 @@ import io
 import base64
 import json
 
+DEBUG = False  # Set to True to enable debug output
+
+def debug_print(*args, **kwargs):
+    if DEBUG:
+        print(*args, **kwargs)
+
 with open('settings.json', 'r') as f:
     settings = json.load(f)
 api_key = settings.get('genai_api_key')
@@ -22,10 +28,10 @@ def nl_to_sql_translator(natural_language_query, table_schema, sample_data):
     prompt = f"""
     Table schema:
     {table_schema}
-    
+
     Sample Data:
     {sample_data}
-    
+
     Convert the following natural language query to a standard SQL query. Only show columns that are needed for the answer.
     Only return the SQL code. Do not include any extra text, explanations, or markdown code blocks
     and table name is df.
@@ -34,7 +40,7 @@ def nl_to_sql_translator(natural_language_query, table_schema, sample_data):
     sql_query = geminiAI(prompt)
     return sql_query
 
-def how_to_present(query,user_query):
+def how_to_present(query, user_query):
     prompt = f"""
     How should I present the result from this sql query to a business audience?
     Should it be a matplotlib graph? If so, what type of graph? Or should it be a table? Just answer with the word table or the type of graph. No explanations.
@@ -74,6 +80,24 @@ def sql_to_nl_translator(query):
     sql_query = geminiAI(prompt)
     return sql_query
 
+# Stub for generate_html_table
+def generate_html_table(result_df):
+    return result_df.to_html(index=False)
+
+# Stub for create_bar_chart
+def create_bar_chart(result_df):
+    # Example: create a simple bar chart for the first two columns
+    if result_df.shape[1] >= 2:
+        x = result_df.iloc[:, 0]
+        y = result_df.iloc[:, 1]
+        plt.figure(figsize=(10, 6))
+        plt.bar(x, y)
+        plt.xlabel(str(result_df.columns[0]))
+        plt.ylabel(str(result_df.columns[1]))
+        plt.tight_layout()
+        plt.savefig("saved_plot.png")
+        plt.close()
+
 def run_query(user_query):
     CSV_FILE = "Financials.csv"
     df = pd.read_csv(CSV_FILE)
@@ -85,19 +109,18 @@ def run_query(user_query):
     sql_statement = nl_to_sql_translator(user_query, my_table_schema, my_sample_data)
     sql_query = sql_statement.strip("`").lstrip("sql\n").strip()
     result_df = sqldf(sql_query, locals())
-    print(result_df)
+    debug_print(result_df)
     presentation = how_to_present(sql_query, user_query)
-    print(presentation)
+    debug_print(presentation)
     nlstring = sql_to_nl_translator(sql_query)
-    print(nlstring)
+    debug_print(nlstring)
     matplotcode = nl_to_matplot_translator(sql_query, presentation)
     matplotcode = matplotcode.strip("`").lstrip("python\n").strip()
-    print(matplotcode)
+    debug_print(matplotcode)
     exec(matplotcode, globals())
-    # html_table = exec(matplotcode)
     if presentation.lower() == "table":
         html_table = generate_html_table(result_df)
-        print(html_table)
+        debug_print(html_table)
         return nlstring, html_table, presentation
     else:
         create_bar_chart(result_df)
@@ -105,9 +128,6 @@ def run_query(user_query):
             image_bytes = f.read()
             return nlstring, image_bytes, presentation
 
-#user_query = "Whats the total revenue for each product category in the last quarter?"
-#print(run_query(user_query))
-
-#user_query = "Show a list with the last 100 items sold!"
-#print(run_query(user_query))
-#grapg that show what is the top 5 sold products in gemany?
+# Example usage:
+# user_query = "Whats the total revenue for each product category in the last quarter?"
+# print(run_query(user_query))
